@@ -76,31 +76,31 @@ export class PacketData implements IPacketData {
 		this._chunk = chunk;
 	}
 
-	public get transportErrorIndicator() {
+	public get transportErrorIndicator(): boolean {
 		return !!(this._chunk[1] & 0x80);
 	}
 
-	public get payloadUnitStartIndicator() {
+	public get payloadUnitStartIndicator(): boolean {
 		return !!(this._chunk[1] & 0x40);
 	}
 
-	public get transportPriority() {
+	public get transportPriority(): boolean {
 		return !!(this._chunk[1] & 0x20);
 	}
 
-	public get pid() {
+	public get pid(): number {
 		return ((this._chunk[1] & 0x1f) * 256) | this._chunk[2];
 	}
 
-	public get transportScramblingControl() {
+	public get transportScramblingControl(): number {
 		return <TransportScramblingControlValues> (this._chunk[3] & 0xc0) / 64;
 	}
 
-	public get adaptationFieldControl() {
+	public get adaptationFieldControl(): number {
 		return <AdaptationFieldControlValues> (this._chunk[3] & 0x30) / 16;
 	}
 
-	public get continuityCounter() {
+	public get continuityCounter(): number {
 		return (this._chunk[3] & 0xf);
 	}
 
@@ -110,7 +110,7 @@ export class PacketData implements IPacketData {
 	 * @remarks
 	 * See also the [adaptationFieldLength property]{@link AdaptationField#adaptationFieldLength} within the adaptationField, which excludes the adaptation field length byte
 	 */
-	public get adaptationFieldTotalLength() {
+	public get adaptationFieldTotalLength(): number {
 		switch(this.adaptationFieldControl) {
 			case AdaptationFieldControlValues.AdaptationFieldOnly:
 			case AdaptationFieldControlValues.AdaptationFieldAndPayload:
@@ -122,7 +122,7 @@ export class PacketData implements IPacketData {
 		}
 	}
 
-	public get adaptationField() {
+	public get adaptationField(): IAdaptationField | null {
 		switch(this.adaptationFieldControl) {
 			case AdaptationFieldControlValues.AdaptationFieldOnly:
 			case AdaptationFieldControlValues.AdaptationFieldAndPayload:
@@ -134,7 +134,7 @@ export class PacketData implements IPacketData {
 		}
 	}
 
-	public get payload() {
+	public get payload(): Buffer | null {
 		switch(this.adaptationFieldControl) {
 			case AdaptationFieldControlValues.NoAdaptationField:
 			case AdaptationFieldControlValues.AdaptationFieldAndPayload:
@@ -148,7 +148,7 @@ export class PacketData implements IPacketData {
 	/**
 	 * @readonly
 	 */
-	public get raw() {
+	public get raw(): Buffer {
 		return this._chunk;
 	}
 }
@@ -161,47 +161,47 @@ export class AdaptationField implements IAdaptationField {
 		this._chunk = chunk;
 	}
 
-	public get adaptationFieldLength() {
+	public get adaptationFieldLength(): number {
 		return this._chunk[0];
 	}
 
-	public get discontinuityIndicator() {
+	public get discontinuityIndicator(): boolean {
 		return !!(this._chunk[1] & 0x80);
 	}
 
-	public get randomAccessIndicator() {
+	public get randomAccessIndicator(): boolean {
 		return !!(this._chunk[1] & 0x40);
 	}
 
-	public get elementaryStreamPriorityIndicator() {
+	public get elementaryStreamPriorityIndicator(): boolean {
 		return !!(this._chunk[1] & 0x20);
 	}
 
-	public get pcrFlag() {
+	public get pcrFlag(): boolean {
 		return !!(this._chunk[1] & 0x10);
 	}
 
-	public get opcrFlag() {
+	public get opcrFlag(): boolean {
 		return !!(this._chunk[1] & 0x8);
 	}
 
-	public get splicingPointFlag() {
+	public get splicingPointFlag(): boolean {
 		return !!(this._chunk[1] & 0x4);
 	}
 
-	public get transportPrivateDataFlag() {
+	public get transportPrivateDataFlag(): boolean {
 		return !!(this._chunk[1] & 0x2);
 	}
 
-	public get adaptationFieldExtensionFlag() {
+	public get adaptationFieldExtensionFlag(): boolean {
 		return !!(this._chunk[1] & 0x1);
 	}
 
-	private get _pcrOffset() {
+	private get _pcrOffset(): number {
 		return 2;
 	}
 
-	public get pcr() {
+	public get pcr(): number | null {
 		if(!this.pcrFlag) {
 			return null;
 		}
@@ -211,11 +211,11 @@ export class AdaptationField implements IAdaptationField {
 		return base * 300 + extension;
 	}
 
-	private get _opcrOffset() {
+	private get _opcrOffset(): number {
 		return this._pcrOffset + (this.pcrFlag ? 6 : 0);
 	}
 
-	public get opcr() {
+	public get opcr(): number | null {
 		if(!this.opcrFlag) {
 			return null;
 		}
@@ -225,11 +225,11 @@ export class AdaptationField implements IAdaptationField {
 		return base * 300 + extension;
 	}
 
-	private get _spliceCountdownOffset() {
+	private get _spliceCountdownOffset(): number {
 		return this._opcrOffset + (this.opcrFlag ? 6 : 0);
 	}
 
-	public get spliceCountdown() {
+	public get spliceCountdown(): number | null {
 		if(!this.splicingPointFlag) {
 			return null;
 		}
@@ -237,29 +237,29 @@ export class AdaptationField implements IAdaptationField {
 		return this._chunk.readInt8(this._spliceCountdownOffset);
 	}
 
-	private get _transportPrivateDataLengthOffset() {
+	private get _transportPrivateDataLengthOffset(): number {
 		return this._spliceCountdownOffset + (this.splicingPointFlag ? 1 : 0);
 	}
 
-	public get transportPrivateDataLength() {
+	public get transportPrivateDataLength(): number | null {
 		if(!this.transportPrivateDataFlag) {
 			return null;
 		}
 		return this._chunk[this._transportPrivateDataLengthOffset];
 	}
 
-	private get _transportPrivateDataOffset() {
+	private get _transportPrivateDataOffset(): number {
 		return this._transportPrivateDataLengthOffset + (this.transportPrivateDataFlag ? 1 : 0);
 	}
 
-	public get transportPrivateData() {
+	public get transportPrivateData(): Buffer | null {
 		if(!this.transportPrivateDataFlag) {
 			return null;
 		}
 		return this._chunk.slice(this._transportPrivateDataOffset, this._transportPrivateDataOffset * (this.transportPrivateDataLength || 0));
 	}
 
-	private get _adaptationExtensionOffset() {
+	private get _adaptationExtensionOffset(): number {
 		return this._transportPrivateDataOffset + (this.transportPrivateDataLength || 0);
 	}
 
@@ -269,7 +269,7 @@ export class AdaptationField implements IAdaptationField {
 	 * @remarks
 	 * See also the [adaptationExtensionLength property]{@link AdaptationExtension#adaptationExtensionLength} within the adaptationExtension, which excludes the adaptation extension length byte
 	 */
-	public get adaptationExtensionTotalLength() {
+	public get adaptationExtensionTotalLength(): number {
 		if(!this.adaptationFieldExtensionFlag) {
 			return 0;
 		}
@@ -277,7 +277,7 @@ export class AdaptationField implements IAdaptationField {
 		return 1 + this._chunk[this._adaptationExtensionOffset];
 	}
 
-	public get adaptationExtension() {
+	public get adaptationExtension(): IAdaptationExtension | null {
 		if(!this.adaptationFieldExtensionFlag) {
 			return null;
 		}
@@ -293,51 +293,51 @@ export class AdaptationExtension implements IAdaptationExtension {
 		this._chunk = chunk;
 	}
 
-	public get adaptationExtensionLength() {
+	public get adaptationExtensionLength(): number {
 		return this._chunk[0];
 	}
 
-	public get legalTimeWindowFlag() {
+	public get legalTimeWindowFlag(): boolean {
 		return !!(this._chunk[1] & 0x80);
 	}
 
-	public get piecewiseRateFlag() {
+	public get piecewiseRateFlag(): boolean {
 		return !!(this._chunk[1] & 0x40);
 	}
 
-	public get seamlessSpliceFlag() {
+	public get seamlessSpliceFlag(): boolean {
 		return !!(this._chunk[1] & 0x20);
 	}
 
-	private get ltwFlagSetOffset() {
+	private get ltwFlagSetOffset(): number {
 		return 2;
 	}
 
-	public get legalTimeWindowValidFlag() {
+	public get legalTimeWindowValidFlag(): boolean {
 		return !!(this._chunk[this.ltwFlagSetOffset] & 0x80);
 	}
 
-	public get legalTimeWindowOffset() {
+	public get legalTimeWindowOffset(): number {
 		return (this._chunk[this.ltwFlagSetOffset] & 0x7f) * 256 + this._chunk[this.ltwFlagSetOffset + 1];
 	}
 
-	private get piecewiseFlagSetOffset() {
+	private get piecewiseFlagSetOffset(): number {
 		return this.ltwFlagSetOffset + (this.legalTimeWindowFlag ? 2 : 0);
 	}
 
-	public get piecewiseRate() {
+	public get piecewiseRate(): number {
 		return (this._chunk[this.piecewiseFlagSetOffset] & 0x3f) * 256 * 256 + this._chunk[this.piecewiseFlagSetOffset + 1] * 256 + this._chunk[this.piecewiseFlagSetOffset + 2];
 	}
 
-	private get seamlessSpliceFlagSetOffset() {
+	private get seamlessSpliceFlagSetOffset(): number {
 		return this.piecewiseFlagSetOffset + (this.piecewiseFlagSetOffset ? 3 : 0);
 	}
 
-	public get spliceType() {
+	public get spliceType(): number {
 		return this._chunk[this.seamlessSpliceFlagSetOffset] & 0xf0 >>> 4;
 	}
 
-	public get dtsNextAccessUnit() {
+	public get dtsNextAccessUnit(): number {
 		return ((this._chunk[this.seamlessSpliceFlagSetOffset] & 0x0e) >>> 1) * 128 * 256 * 128 * 256
 			+ (this._chunk[this.seamlessSpliceFlagSetOffset + 1]) * 128 * 256 * 128
 			+ ((this._chunk[this.seamlessSpliceFlagSetOffset + 2] & 0xfe) >>> 1) * 128 * 256

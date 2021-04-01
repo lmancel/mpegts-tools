@@ -12,3 +12,5 @@ export {
 	MPEGTS_PACKET_LENGTH,
 	MPEGTS_SYNC_BYTE
 } from './Packets';
+export * from './ProgramSpecificInformation'
+export * from './descriptors'
