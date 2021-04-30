@@ -1,9 +1,7 @@
 import { Descriptor } from './descriptor'
 
 export class CADescriptor extends Descriptor {
-  get isCa() {
-    return true
-  }
+  isCa = true
 
   // CA
   get caSystemId() {
