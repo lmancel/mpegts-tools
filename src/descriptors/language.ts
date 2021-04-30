@@ -1,9 +1,7 @@
 import { Descriptor } from './descriptor'
 
 export class LanguageDescriptor extends Descriptor {
-  get isIsoLang() {
-    return true
-  }
+  isIsoLang = true
 
   // ISO Language
   get languages(): { code: string, type: number }[] {
@@ -17,11 +15,9 @@ export class LanguageDescriptor extends Descriptor {
     let offset = 0
 
     while (offset < this.dataLength) {
-      const start = 2 + offset
-
       languages.push({
-        code: this._chunk.slice(start, start + 3).toString(),
-        type: this._chunk[start + 3],
+        code: this.data.slice(offset, offset + 3).toString(),
+        type: this.data[offset + 3],
       })
 
       offset += 4

@@ -54,6 +54,8 @@ export const DescriptorTag = {
     MPEG2_STEREOSCOPIC_VIDEO_FORMAT: 52,
     STEREOSCOPIC_PROGRAM_INFO: 53,
     STEREOSCOPIC_VIDEO_INFO: 54,
+	TELETEXT: 0x56,
+	SUBTITLING: 0x59,
 }
 
 // const LanguageTypes = {
@@ -67,14 +69,6 @@ export class Descriptor {
         return this._chunk[0]
     }
 
-    get isIsoLang() {
-        return false
-    }
-
-    get isCa() {
-      return false
-    }
-
     get data() {
         return this._chunk.slice(2)
     }
@@ -86,6 +80,11 @@ export class Descriptor {
     get dataLength() {
       return this._chunk[1]
     }
+
+    isIsoLang = false
+	isCa = false
+	isSubtitling = false
+	isTeletext = false
 
     constructor(protected _chunk: Buffer) {}
 }
