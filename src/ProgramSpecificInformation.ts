@@ -55,7 +55,7 @@ export class ProgramSpecificInformation implements IConditionalAccessTable {
     }
 
     get sectionLength(): number {
-        return this._chunk.slice(this.tableStart + 1, this.tableStart + 3).readUInt16BE(0) & 0x0fff
+        return this._chunk.readUInt16BE(this.tableStart + 1) & 0x0fff
     }
 
     get section(): Buffer {
@@ -64,7 +64,7 @@ export class ProgramSpecificInformation implements IConditionalAccessTable {
     }
 
     get tableIdExtension(): number {
-        return this.section.slice(0, 2).readUInt16BE(0)
+        return this.section.readUInt16BE(0)
     }
 
     get versionNumber(): number {

@@ -1,4 +1,8 @@
-// https://gstreamer.freedesktop.org/documentation/mpegts/gstmpegtsdescriptor.html?gi-language=c#enumerations
+/**
+ * https://gstreamer.freedesktop.org/documentation/mpegts/gstmpegtsdescriptor.html?gi-language=c#GstMpegtsDescriptorType
+ * https://gstreamer.freedesktop.org/documentation/mpegts/gst-atsc-descriptor.html?gi-language=c#GstMpegtsATSCDescriptorType
+ * https://gstreamer.freedesktop.org/documentation/mpegts/gst-dvb-descriptor.html?gi-language=c#GstMpegtsDVBDescriptorType
+ */
 export const DescriptorTag = {
     RESERVED_00: 0,
     RESERVED_01: 1,
@@ -49,13 +53,19 @@ export const DescriptorTag = {
     AUXILIARY_VIDEO_STREAM: 47,
     SVC_EXTENSION: 48,
     MVC_EXTENSION: 49,
-    J2K_VIDEO: 50,
+    VIDEO_J2K: 50,
     MVC_OPERATION_POINT: 51,
     MPEG2_STEREOSCOPIC_VIDEO_FORMAT: 52,
     STEREOSCOPIC_PROGRAM_INFO: 53,
     STEREOSCOPIC_VIDEO_INFO: 54,
 	TELETEXT: 0x56,
 	SUBTITLING: 0x59,
+	AUDIO_DVB_AC3: 106,
+	AUDIO_DVB_EAC3: 122,
+	AUDIO_DVB_DTS: 123,
+	AUDIO_DVB_AAC: 124,
+	AUDIO_ATSC_AC3: 129,
+	AUDIO_ATSC_EAC3: 204,
 }
 
 // const LanguageTypes = {
@@ -86,5 +96,28 @@ export class Descriptor {
 	isSubtitling = false
 	isTeletext = false
 
-    constructor(protected _chunk: Buffer) {}
+	isAudio: boolean
+	isVideo: boolean
+
+    constructor(protected readonly _chunk: Buffer) {
+		this.isAudio = [
+			DescriptorTag.AUDIO_STREAM,
+			DescriptorTag.MPEG4_AUDIO,
+			DescriptorTag.MPEG2_AAC_AUDIO,
+			DescriptorTag.MPEG4_AUDIO_EXTENSION,
+			DescriptorTag.AUDIO_DVB_AC3,
+			DescriptorTag.AUDIO_DVB_EAC3,
+			DescriptorTag.AUDIO_DVB_DTS,
+			DescriptorTag.AUDIO_DVB_AAC,
+			DescriptorTag.AUDIO_ATSC_AC3,
+			DescriptorTag.AUDIO_ATSC_EAC3,
+		].includes(this.tag)
+
+		this.isVideo = [
+			DescriptorTag.VIDEO_STREAM,
+			DescriptorTag.MPEG4_VIDEO,
+			DescriptorTag.AVC_VIDEO,
+			DescriptorTag.VIDEO_J2K,
+		].includes(this.tag)
+	}
 }
