@@ -114,6 +114,11 @@ export class ProgramSpecificInformation implements IConditionalAccessTable {
 
             while (offset < programInfoLength) {
                 const currentDescriptor = buildDescriptor(this.section.slice(9 + offset))
+
+				if (!currentDescriptor.length) {
+					// Potentially a multi-section PSI, need more data to complete
+					break
+				}
                 descriptors.push(currentDescriptor)
                 offset += currentDescriptor.length
             }
@@ -145,6 +150,10 @@ export class ProgramSpecificInformation implements IConditionalAccessTable {
 			while (esInfosOffset < esInfoLength) {
 				const currentDescriptor = buildDescriptor(streamInfoData.slice(offset + 5 + esInfosOffset))
 
+				if (!currentDescriptor.length) {
+					// Potentially a multi-section PSI, need more data to complete
+					break
+				}
 				esInfos.push(currentDescriptor)
 				esInfosOffset += currentDescriptor.length
 			}
@@ -161,5 +170,11 @@ export class ProgramSpecificInformation implements IConditionalAccessTable {
 		return elementaryStreams
     }
 
-    constructor(private readonly _chunk: Buffer) {}
+    constructor(private _chunk: Buffer) {}
+
+	append(buffer: Buffer): this {
+		this._chunk = Buffer.concat([this._chunk, buffer])
+		this._cache = {}
+		return this
+	}
 }
