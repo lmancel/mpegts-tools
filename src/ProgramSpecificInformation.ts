@@ -102,6 +102,9 @@ export class ProgramSpecificInformation implements IConditionalAccessTable {
     }
 
     get programDescriptors(): Descriptor[] {
+		if (!this.hasBufferedEnough()) {
+			throw Error('PSI is not completely buffered, cannot parse programDescriptors')
+		}
         if (this._cache.programDescriptors) {
             return this._cache.programDescriptors
         }
@@ -116,7 +119,7 @@ export class ProgramSpecificInformation implements IConditionalAccessTable {
                 const currentDescriptor = buildDescriptor(this.section.slice(9 + offset))
 
 				if (!currentDescriptor.length) {
-					// Potentially a multi-section PSI, need more data to complete
+					// Should not occur, but potentially a multi-section PSI. Need more data.
 					break
 				}
                 descriptors.push(currentDescriptor)
@@ -133,6 +136,9 @@ export class ProgramSpecificInformation implements IConditionalAccessTable {
     }
 
     get elementaryStreams(): IElementaryStream[] {
+		if (!this.hasBufferedEnough()) {
+			throw Error('PSI is not completely buffered, cannot parse elementaryStreams')
+		}
 		if (this._cache.elementaryStreams) {
 			return this._cache.elementaryStreams
 		}
@@ -151,7 +157,7 @@ export class ProgramSpecificInformation implements IConditionalAccessTable {
 				const currentDescriptor = buildDescriptor(streamInfoData.slice(offset + 5 + esInfosOffset))
 
 				if (!currentDescriptor.length) {
-					// Potentially a multi-section PSI, need more data to complete
+					// Should not occur, but potentially a multi-section PSI. Need more data.
 					break
 				}
 				esInfos.push(currentDescriptor)
@@ -177,4 +183,11 @@ export class ProgramSpecificInformation implements IConditionalAccessTable {
 		this._cache = {}
 		return this
 	}
+
+	/**
+	 * @returns {boolean} if we have enough data to parse the entire section
+	 */
+    hasBufferedEnough(): boolean {
+      return this.section.length >= this.sectionLength
+    }
 }
